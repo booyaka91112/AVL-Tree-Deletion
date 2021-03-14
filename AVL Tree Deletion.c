@@ -1,104 +1,88 @@
-    private Node rightRotate(Node y) {
-        Node x = y.left;
-        Node T3 = x.right;
+static Node rightRotate( Node K2 ) {
+	Node K1;
+	K1 = K2.Left;
+	K2.Left = K1.Right;
+	K1.Right = K2;
+	K2.Height = Max( Height( K2.Left ), Height( K2.Right ) ) + 1;
+	K1.Height = Max( Height( K1.Left ), K2.Height ) + 1;
+	return K1;
+}
+static Node leftRotate( Node K1 ) {
+	Node K2;
+	K2 = K1.Right;
+	K1.Right = K2.Left;
+	K2.Left = K1;
+	K1.Height = Max( Height( K1.Left ), Height( K1.Right ) ) + 1;
+	K2.Height = Max( Height( K2.Right ), K1.Height ) + 1;
+	return K2;
+}
 
-        // ¦V¥k±ÛÂà¹Lµ{
-        x.right = y;
-        y.left = T3;
+static Node remove(Node node, K key) {
 
-        // §ó·sheight
-        y.height = max(getHeight(y.left), getHeight(y.right)) + 1;
-        x.height = max(getHeight(x.left), getHeight(x.right)) + 1;
+	Node retNode;
+	if( key < node.key ) {
+		node.left = remove(node.left , key); //ç¹¼çºŒå¾€å·¦å°‹æ‰¾
+		// return node;
+		retNode = node;
+	} else if(key > node.key ) {
+		node.right = remove(node.right, key); //ç¹¼çºŒå¾€å³å°‹æ‰¾
+		retNode = node;
+	} else { // key == node.key
 
-        return x;
-    }
+		// å¾…åˆªé™¤ç¯€é»žå·¦å­æ¨¹ç‚ºç©ºçš„æƒ…æ³
+		if(node.left == null) {
+			Node rightNode = node.right;
+			node.right = null;
+			// return rightNode;
+			retNode = rightNode;
+		}
 
-    private Node leftRotate(Node y) {
-        Node x = y.right;
-        Node T2 = x.left;
+		// å¾…åˆªé™¤ç¯€é»žå³å­æ¨¹ç‚ºç©ºçš„æƒ…æ³
+		else if(node.right == null) {
+			Node leftNode = node.left;
+			node.left = null;
+			retNode = leftNode;
+		}
 
-        // ¦V¥ª±ÛÂà¹Lµ{
-        x.left = y;
-        y.right = T2;
+		// å¾…åˆªé™¤ç¯€é»žå·¦å³å­æ¨¹å‡ä¸ç‚ºç©ºçš„æƒ…æ³
+		else {
+			// æ‰¾åˆ°æ¯”å¾…åˆªé™¤ç¯€é»žå¤§çš„æœ€å°ç¯€é»ž, å³å¾…åˆªé™¤ç¯€é»žå³å­æ¨¹çš„æœ€å°ç¯€é»ž(BSTåšæ³•) 
+			// ç”¨é€™å€‹ç¯€é»žé ‚æ›¿å¾…åˆªé™¤ç¯€é»žçš„ä½ç½®
+			Node successor = minimum(node.right);
+			successor.right = remove(node.right, successor.key);
+			successor.left = node.left;
+			node.left = null;
+			node.right = null;
+			// return successor;
+			retNode = successor;
+		}
+	}
 
-        // §ó·sheight
-        y.height = max(getHeight(y.left), getHeight(y.right)) + 1;
-        x.height = max(getHeight(x.left), getHeight(x.right)) + 1;
+	// æ›´æ–°height
+	retNode.height = 1 + Math.max(getHeight(retNode.left), getHeight(retNode.right));
 
-        return x;
-    }
+	// å¹³è¡¡å› å­
+	int balanceFactor = getBalanceFactor(retNode);
 
-    private Node remove(Node node, K key){
+	// å¹³è¡¡ç¶­è­·
+	// LL
+	if (balanceFactor > 1 && getBalanceFactor(retNode.left) >= 0)
+		return rightRotate(retNode);
 
-        Node retNode;
-        if( key < node.key ){
-            node.left = remove(node.left , key); //Ä~Äò©¹¥ª´M§ä
-            // return node;
-            retNode = node;
-        }
-        else if(key > node.key ){
-            node.right = remove(node.right, key); //Ä~Äò©¹¥k´M§ä
-            retNode = node;
-        }
-        else{   // key == node.key
+	// RR
+	if (balanceFactor < -1 && getBalanceFactor(retNode.right) <= 0)
+		return leftRotate(retNode);
 
-            // «Ý§R°£¸`ÂI¥ª¤l¾ð¬°ªÅªº±¡ªp
-            if(node.left == null){
-                Node rightNode = node.right;
-                node.right = null;
-                // return rightNode;
-                retNode = rightNode;
-            }
+	// LR
+	if (balanceFactor > 1 && getBalanceFactor(retNode.left) < 0) {
+		retNode.left = leftRotate(retNode.left);
+		return rightRotate(retNode);
+	}
 
-            // «Ý§R°£¸`ÂI¥k¤l¾ð¬°ªÅªº±¡ªp
-            else if(node.right == null){
-                Node leftNode = node.left;
-                node.left = null;
-                // return leftNode;
-                retNode = leftNode;
-            }
-
-            // «Ý§R°£¸`ÂI¥ª¥k¤l¾ð§¡¤£¬°ªÅªº±¡ªp
-            else{
-                // §ä¨ì¤ñ«Ý§R°£¸`ÂI¤jªº³Ì¤p¸`ÂI, §Y«Ý§R°£¸`ÂI¥k¤l¾ðªº³Ì¤p¸`ÂI
-                // ¥Î³o­Ó¸`ÂI³»´À«Ý§R°£¸`ÂIªº¦ì¸m
-                Node successor = minimum(node.right);
-                //successor.right = removeMin(node.right);
-                successor.right = remove(node.right, successor.key);
-                successor.left = node.left;
-
-                node.left = node.right = null;
-                // return successor;
-                retNode = successor;
-            }
-        }
-
-        // §ó·sheight
-        retNode.height = 1 + Math.max(getHeight(retNode.left), getHeight(retNode.right));
-
-        // ¥­¿Å¦]¤l
-        int balanceFactor = getBalanceFactor(retNode);
-
-        // ¥­¿ÅºûÅ@
-        // LL
-        if (balanceFactor > 1 && getBalanceFactor(retNode.left) >= 0)
-            return rightRotate(retNode);
-
-        // RR
-        if (balanceFactor < -1 && getBalanceFactor(retNode.right) <= 0)
-            return leftRotate(retNode);
-
-        // LR
-        if (balanceFactor > 1 && getBalanceFactor(retNode.left) < 0) {
-            retNode.left = leftRotate(retNode.left);
-            return rightRotate(retNode);
-        }
-
-        // RL
-        if (balanceFactor < -1 && getBalanceFactor(retNode.right) > 0) {
-            retNode.right = rightRotate(retNode.right);
-            return leftRotate(retNode);
-        }
-        return retNode;
-    }
-
+	// RL
+	if (balanceFactor < -1 && getBalanceFactor(retNode.right) > 0) {
+		retNode.right = rightRotate(retNode.right);
+		return leftRotate(retNode);
+	}
+	return retNode;
+}
